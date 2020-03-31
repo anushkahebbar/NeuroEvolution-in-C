@@ -35,7 +35,7 @@ int InitGame(Gamestate *game)
         game-> WhichPipeToStart = 0;
         game-> PipeGenerationTimeLast = 0;   
       
-		TextInit(game -> text);
+//		TextInit(game -> text);
 
 		int NodesArr[3] = {4, 3, 1};
 
@@ -57,21 +57,20 @@ int ReceiveInput(Gamestate *game)
             case SDL_QUIT: ;
 				game -> running = 0;
             break;
-            case SDL_WINDOWEVENT_CLOSE:
-            if(game -> window) {
-                SDL_DestroyWindow(game -> window);
-                game -> window = NULL;
-                game -> running = 0;
-            }
+            case SDL_WINDOWEVENT_CLOSE:;
+           		if(game -> window) {
+          	      SDL_DestroyWindow(game -> window);
+          	      game -> window = NULL;
+          	      game -> running = 0;
+          		}
             break;
-            case SDL_KEYDOWN:
-            switch(event.key.keysym.sym)
-           {
-                   case SDLK_ESCAPE: ;
-						FreeResources(game);				                       
+            case SDL_KEYDOWN:;
+            	switch(event.key.keysym.sym)
+           		{
+                	case SDLK_ESCAPE: ;				                       
 						game -> running  = 0;
                    break;
-            }
+            	}
         }
     }
 	return 1;
@@ -116,7 +115,7 @@ int UpdateGame(Gamestate *game)
         game -> WhichPipeToStart %= PIPES;
     }
 	
-	UpdateText(game -> text);
+//	UpdateText(game -> text);
 
     for (int i = 0; i < PIPES; ++i)
 		UpdatePipe(&game -> pipes[i], deltaTime);
@@ -139,17 +138,17 @@ int RenderDisplay(Gamestate *game)
     
 //	if (ACTIVE == 0) {
 
-		game -> text -> texture = SDL_CreateTextureFromSurface(game -> renderer, game -> text -> surface);			
-
-		if (game -> text -> texture == NULL) {
-                printf("Unable to create texture from rendered text. SDL Error: %s\n", SDL_GetError());
-				exit(1);
-		}
-		else {
-			SDL_RenderCopy(game -> renderer, game -> text -> texture, NULL, &game -> text -> text_rect);
-			SDL_DestroyTexture(game -> text -> texture);
-			game -> text -> texture = NULL;
-		}
+//		game -> text -> texture = SDL_CreateTextureFromSurface(game -> renderer, game -> text -> surface);			
+//
+//		if (game -> text -> texture == NULL) {
+//                printf("Unable to create texture from rendered text. SDL Error: %s\n", SDL_GetError());
+//				exit(1);
+//		}
+//		else {
+//			SDL_RenderCopy(game -> renderer, game -> text -> texture, NULL, &game -> text -> text_rect);
+//			SDL_DestroyTexture(game -> text -> texture);
+//			game -> text -> texture = NULL;
+//		}
 //	}
 		
     SDL_SetRenderDrawColor(game -> renderer, 255, 255, 255, 255);
