@@ -2,13 +2,15 @@
 #define NN_H
 
 #include "activation.h"
+#include "bird.h"
 
 typedef struct NeuralNetwork {
 
-  int *NodesArr;
-  int Layers;
-  float *Weights;
-  float *Biases;
+	int *NodesArr;
+	int Layers;
+	float *Weights;
+	float *Biases;
+	Bird bird;
 
 } NeuralNetwork;
 

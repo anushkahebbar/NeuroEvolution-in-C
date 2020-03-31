@@ -15,9 +15,6 @@ void BirdInit(Bird *bird)
     bird -> b.y = bird -> y;
     bird -> b.w = bird -> w;
     bird -> b.h = bird -> h;
-	int NodesArr[3] = {4, 3, 1};
-	bird -> nn = newNN(3, NodesArr);
-//	DisplayNN(&bird -> nn);
 }
 
 void SetBoundary(Bird *bird)

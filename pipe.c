@@ -37,19 +37,6 @@ void UpdatePipe(Pipe *pipe, double c_time)
     }   
 }
 
-void UpdateBird(Pipe *pipe, Bird *bird)
-{
-	float inputs[4] = {bird -> b.x, bird -> b.y, pipe -> x, pipe -> bot.y};
-	float* output = FeedForward(&bird -> nn, inputs);
-	printf("%f\n", *output);
-
-	if (*output < 0.5)
-		bird -> velocity += bird -> lift;
-	bird -> velocity += bird -> gravity;
-	bird -> y += bird -> velocity; 
-	bird -> b.y = bird -> y;
-}
-
 int CheckCollision(Pipe *pipe, Bird *bird)
 {
     int x_top_dist = bird -> b.x + bird -> b.w - pipe -> top.x - pipe -> top.w; 

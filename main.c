@@ -3,18 +3,14 @@
 int main(int argc, char* argv[])
 {
 	Gamestate game;
-    if (InitGame(&game)) printf ("Initialisation failed.\n");
-    else {
-        while(game.running) {
-            if (ReceiveInput(&game)) printf("one\n");
-            else {
-				if (UpdateGame(&game)) printf("two\n");
-				else {
-		            if (RenderDisplay(&game)) printf("three\n");
-				}
-			}
-		}
+    if (!InitGame(&game)) printf ("Initialisation failed.\n");
+	
+	while(game.running) {
+		if (!ReceiveInput(&game)) printf("Receiving input failed.\n");
+		if (!UpdateGame(&game)) printf("Game updation failed.\n");
+		if (!RenderDisplay(&game)) printf("Display rendering failed.\n");
 	}   
+
     FreeResources(&game);
     return 0;
 }

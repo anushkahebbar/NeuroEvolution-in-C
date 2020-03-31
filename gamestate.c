@@ -3,7 +3,9 @@
 const int WIDTH = 1200;
 const int HEIGHT = 600;
 int PIPES = 4;
-int BIRDS =1;
+int BIRDS = 1;
+float THRESHOLD = 20;
+int ACTIVE = 0;
 
 int InitGame(Gamestate *game)
 {
@@ -11,8 +13,12 @@ int InitGame(Gamestate *game)
 
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
       printf("Unable to initialize SDL: %s\n", SDL_GetError());
-      return 1;
+      return 0;
     }
+	if (TTF_Init() == -1) {
+		printf("Unable to initialise TTF\n");
+		return 0;
+	}
     else {
         game -> window = SDL_CreateWindow("Flappy Bird with a Twist",                  // window title
                                                                           SDL_WINDOWPOS_UNDEFINED,  // initial x position
@@ -22,19 +28,25 @@ int InitGame(Gamestate *game)
                                                                           SDL_WINDOW_OPENGL);               // flags    
 
         game -> renderer = SDL_CreateRenderer(game -> window, -1, SDL_RENDERER_ACCELERATED |        
-SDL_RENDERER_PRESENTVSYNC);
+		SDL_RENDERER_PRESENTVSYNC);
 
         game -> TimeLast = 0;
         game-> TimeNow = SDL_GetPerformanceCounter();
         game-> WhichPipeToStart = 0;
         game-> PipeGenerationTimeLast = 0;   
       
+		TextInit(game -> text);
+
+		int NodesArr[3] = {4, 3, 1};
+
 		for (int i = 0; i < PIPES; ++i) 
 			PipeInit(&game -> pipes[i]); 
-		for(int j = 0; j < BIRDS; ++j)	            
-			BirdInit(&game -> birds[j]);
+		for(int j = 0; j < BIRDS; ++j) {	            
+			game -> nn[j] = newNN(3, NodesArr);
+			DisplayNN(&game -> nn[j]);
+		}
     }
-    return 0;
+    return 1;
 }
 
 int ReceiveInput(Gamestate *game)
@@ -62,7 +74,26 @@ int ReceiveInput(Gamestate *game)
             }
         }
     }
-	return 0;
+	return 1;
+}
+
+int UpdateBird(Pipe* pipe, NeuralNetwork* nn)
+{
+	float inputs[4];
+	inputs[0] = nn -> bird.b.y;
+	inputs[1] = pipe -> x;
+	inputs[2] = pipe -> top.y;
+	inputs[3] = pipe -> top.h;
+
+	float* output = FeedForward(nn, inputs);
+	printf("NN Output: %f\n", *output);
+
+	if (*output > THRESHOLD)
+		nn -> bird.velocity += nn -> bird.lift;
+	nn -> bird.velocity += nn -> bird.gravity;
+	nn -> bird.y += nn -> bird.velocity; 
+	nn -> bird.b.y = nn -> bird.y;
+	return 1;
 }
 
 int UpdateGame(Gamestate *game)
@@ -84,19 +115,21 @@ int UpdateGame(Gamestate *game)
         }
         game -> WhichPipeToStart %= PIPES;
     }
+	
+	UpdateText(game -> text);
 
     for (int i = 0; i < PIPES; ++i)
 		UpdatePipe(&game -> pipes[i], deltaTime);
 	for(int j = 0; j < BIRDS; ++j)
-        SetBoundary(&game -> birds[j]);
+        SetBoundary(&game -> nn[j].bird);
 
     for (int i = 0; i < PIPES; ++i)
         for(int j = 0; j < BIRDS; ++j) {
-			UpdateBird(&game -> pipes[i], &game -> birds[j]);
-            if (CheckCollision(&game -> pipes[i], &game -> birds[j]))
-                game -> birds[j].isAlive = 0;
+			if (UpdateBird(&game -> pipes[i], &game -> nn[j])) printf("Updated NN\n");
+            if (CheckCollision(&game -> pipes[i], &game -> nn[j].bird))
+                game -> nn[j].bird.isAlive = 0;
 		}
-	return 0;
+	return 1;
 }
 
 int RenderDisplay(Gamestate *game)
@@ -104,9 +137,25 @@ int RenderDisplay(Gamestate *game)
     SDL_SetRenderDrawColor(game -> renderer, 0, 0, 0, 255);
     SDL_RenderClear(game -> renderer);
     
+//	if (ACTIVE == 0) {
+
+		game -> text -> texture = SDL_CreateTextureFromSurface(game -> renderer, game -> text -> surface);			
+
+		if (game -> text -> texture == NULL) {
+                printf("Unable to create texture from rendered text. SDL Error: %s\n", SDL_GetError());
+				exit(1);
+		}
+		else {
+			SDL_RenderCopy(game -> renderer, game -> text -> texture, NULL, &game -> text -> text_rect);
+			SDL_DestroyTexture(game -> text -> texture);
+			game -> text -> texture = NULL;
+		}
+//	}
+		
     SDL_SetRenderDrawColor(game -> renderer, 255, 255, 255, 255);
     for (int i = 0; i < PIPES; ++i) {
         if (game -> pipes[i].isActive) {
+			if (ACTIVE == 0) ACTIVE = 1;
 //			printf("---------------\n%d\n-----------------", i);
             SDL_RenderFillRect(game -> renderer, &game -> pipes[i].top);
             SDL_RenderFillRect(game -> renderer, &game -> pipes[i].bot);
@@ -114,22 +163,25 @@ int RenderDisplay(Gamestate *game)
     }
     
     for (int j = 0; j < BIRDS; ++j) {
-        if (game -> birds[j].isAlive) {
-            SDL_RenderFillRect(game -> renderer, &game -> birds[j].b);
+        if (game -> nn[j].bird.isAlive) {
+            SDL_RenderFillRect(game -> renderer, &game -> nn[j].bird.b);
         }
-//		else {
-//			SDL_SetRenderDrawColor(game -> renderer, 255, 0, 0, 255);
-//			SDL_RenderFillRect(game -> renderer, &game -> birds[j].b);
-//		}
+		else {
+			SDL_SetRenderDrawColor(game -> renderer, 255, 0, 0, 255);
+			SDL_RenderFillRect(game -> renderer, &game -> nn[j].bird.b);
+		}
     }
     
     SDL_RenderPresent(game -> renderer);
-	return 0;
+	return 1;
 }
 
 void FreeResources(Gamestate *game)
 {
     SDL_DestroyRenderer(game -> renderer);
     SDL_DestroyWindow(game -> window);
+	SDL_FreeSurface(game -> text -> surface);
+	TTF_CloseFont(game -> text -> font);
     SDL_Quit();
+	TTF_Quit();
 }

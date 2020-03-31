@@ -40,7 +40,7 @@ float* FeedForward(NeuralNetwork *nn, float InputArr[])
     for (int j = 0; j < curr_layer; ++j) {
       float *weight_arr = ((nn -> Weights) + (i*curr_layer) + (j*prev_layer*curr_layer));
       float *bias_arr = ((nn -> Biases) + (i*curr_layer) + j);
-      layer_activ[j] = relu(WeightedSum(weight_arr, bias_arr, InputArr, prev_layer));
+      layer_activ[j] = swish(WeightedSum(weight_arr, bias_arr, InputArr, prev_layer));
     }
     InputArr = layer_activ;
   }
@@ -50,32 +50,33 @@ float* FeedForward(NeuralNetwork *nn, float InputArr[])
 
 NeuralNetwork newNN(int Layers, int NodesArr[])
 {
-  float rand_val = 2.0;
-  int wm_size = get_wm_size(Layers, NodesArr);
-  int bm_size = get_bm_size(Layers, NodesArr);
+	float rand_val = 2.0;
+	int wm_size = get_wm_size(Layers, NodesArr);
+	int bm_size = get_bm_size(Layers, NodesArr);
 
-  NeuralNetwork* nn = malloc(sizeof(NeuralNetwork));
+	NeuralNetwork* nn = malloc(sizeof(NeuralNetwork));
+	
+	nn -> NodesArr = NodesArr;
+	nn -> Layers = Layers;
+	nn -> Weights = malloc(wm_size*sizeof(float));
+	nn -> Biases = malloc(bm_size*sizeof(float));
+	BirdInit(&nn -> bird);
 
-  nn -> NodesArr = NodesArr;
-  nn -> Layers = Layers;
-  nn -> Weights = malloc(wm_size*sizeof(float));
-  nn -> Biases = malloc(bm_size*sizeof(float));
-
-  for(int i = 0; i < (Layers - 1); ++i) {
-    int curr_layer = NodesArr[i + 1];
+	for(int i = 0; i < (Layers - 1); ++i) {
+	int curr_layer = NodesArr[i + 1];
     int prev_layer = NodesArr[i];
 
-    for(int j = 0; j < curr_layer; ++j) {
-      float b_val = (((float) rand() /(float)(RAND_MAX)) * rand_val);
-      ((nn -> Biases) + (i*curr_layer))[j] = b_val;
-
-      for(int k = 0; k < prev_layer; ++k) {
-        float w_val = (((float) rand() / (float)(RAND_MAX)) * rand_val);
-        ((nn -> Weights) + (i*curr_layer*prev_layer) + (j*prev_layer))[k] = w_val;
-      }
-    }
-  }
-  return *nn;
+	    for(int j = 0; j < curr_layer; ++j) {
+			float b_val = (((float) rand() /(float)(RAND_MAX)) * rand_val);
+			((nn -> Biases) + (i*curr_layer))[j] = b_val;
+	
+			for(int k = 0; k < prev_layer; ++k) {
+		        float w_val = (((float) rand() / (float)(RAND_MAX)) * rand_val);
+		        ((nn -> Weights) + (i*curr_layer*prev_layer) + (j*prev_layer))[k] = w_val;
+			}
+		}
+	}
+	return *nn;
 }
 
 void DisplayNN(NeuralNetwork *nn)

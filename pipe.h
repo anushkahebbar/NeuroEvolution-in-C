@@ -24,7 +24,6 @@ typedef struct {
 } Pipe;
 
 void PipeInit(Pipe *);
-void UpdateBird(Pipe *, Bird *);
 void UpdatePipe(Pipe *, double);
 int CheckCollision(Pipe *, Bird *);
 
