@@ -9,7 +9,7 @@ void BirdInit(Bird *bird)
     bird -> isAlive = 1;
     bird -> gravity = 0.2;
     bird -> velocity = 0;
-    bird -> lift = -0.8;
+    bird -> lift = -0.5;
     
 	bird -> b.x = bird -> x;
     bird -> b.y = bird -> y;

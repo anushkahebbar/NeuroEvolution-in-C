@@ -61,17 +61,18 @@ NeuralNetwork newNN(int Layers, int NodesArr[])
 	nn -> Weights = malloc(wm_size*sizeof(float));
 	nn -> Biases = malloc(bm_size*sizeof(float));
 	BirdInit(&nn -> bird);
-
+	
+	int a = 2;
 	for(int i = 0; i < (Layers - 1); ++i) {
 	int curr_layer = NodesArr[i + 1];
     int prev_layer = NodesArr[i];
 
 	    for(int j = 0; j < curr_layer; ++j) {
-			float b_val = (((float) rand() /(float)(RAND_MAX)) * rand_val);
+			float b_val = (float)((double)rand()/(double)(RAND_MAX/a));
 			((nn -> Biases) + (i*curr_layer))[j] = b_val;
 	
 			for(int k = 0; k < prev_layer; ++k) {
-		        float w_val = (((float) rand() / (float)(RAND_MAX)) * rand_val);
+		        float w_val = (float)((double)rand()/(double)(RAND_MAX/a));
 		        ((nn -> Weights) + (i*curr_layer*prev_layer) + (j*prev_layer))[k] = w_val;
 			}
 		}

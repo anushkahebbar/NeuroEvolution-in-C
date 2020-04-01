@@ -8,7 +8,7 @@ float sigmoid(float X)
 float relu(float X)
 {
 	if (X < 0) return 0;
-	else return X;
+	else return X / 10.0;
 }
 
 float sigmoid_der(float X)
@@ -35,7 +35,7 @@ float tanh_der(float X)
 float swish(float X)
 {
 	float Y =  X / (1 + expf (-1 * X));
-	return Y / 10;
+	return Y  / 10;
 }
 
 

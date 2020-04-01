@@ -1,1 +1,0 @@
-/home/krilek/libpng/include/libpng16/pngconf.h

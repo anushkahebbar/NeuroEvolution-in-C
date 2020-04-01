@@ -3,7 +3,7 @@
 const int WIDTH = 1200;
 const int HEIGHT = 600;
 int PIPES = 4;
-int BIRDS = 1;
+int BIRDS = 5;
 float THRESHOLD = 20;
 int ACTIVE = 0;
 
@@ -40,7 +40,7 @@ int InitGame(Gamestate *game)
 		int NodesArr[3] = {4, 3, 1};
 
 		for (int i = 0; i < PIPES; ++i) 
-			PipeInit(&game -> pipes[i]); 
+			PipeInit(&game -> pipes[i], i + 1); 
 		for(int j = 0; j < BIRDS; ++j) {	            
 			game -> nn[j] = newNN(3, NodesArr);
 			DisplayNN(&game -> nn[j]);
@@ -57,7 +57,7 @@ int ReceiveInput(Gamestate *game)
             case SDL_QUIT: ;
 				game -> running = 0;
             break;
-            case SDL_WINDOWEVENT_CLOSE:;
+            case SDL_WINDOWEVENT_CLOSE: ;
            		if(game -> window) {
           	      SDL_DestroyWindow(game -> window);
           	      game -> window = NULL;
@@ -80,12 +80,12 @@ int UpdateBird(Pipe* pipe, NeuralNetwork* nn)
 {
 	float inputs[4];
 	inputs[0] = nn -> bird.b.y;
-	inputs[1] = pipe -> x;
+	inputs[1] = ((pipe -> x) - (nn -> bird.b.x));
 	inputs[2] = pipe -> top.y;
-	inputs[3] = pipe -> top.h;
+	inputs[3] = pipe -> bot.y;
 
 	float* output = FeedForward(nn, inputs);
-	printf("NN Output: %f\n", *output);
+//	printf("NN Output: %f\n", *output);
 
 	if (*output > THRESHOLD)
 		nn -> bird.velocity += nn -> bird.lift;
@@ -118,13 +118,16 @@ int UpdateGame(Gamestate *game)
 //	UpdateText(game -> text);
 
     for (int i = 0; i < PIPES; ++i)
-		UpdatePipe(&game -> pipes[i], deltaTime);
+		UpdatePipe(&game -> pipes[i], deltaTime, i + 1);
 	for(int j = 0; j < BIRDS; ++j)
         SetBoundary(&game -> nn[j].bird);
 
     for (int i = 0; i < PIPES; ++i)
         for(int j = 0; j < BIRDS; ++j) {
-			if (UpdateBird(&game -> pipes[i], &game -> nn[j])) printf("Updated NN\n");
+			if (game -> pipes[i].isActive && (game -> pipes[i].x + game -> pipes[i].width) >= game -> nn[j].bird.x) {
+				UpdateBird(&game -> pipes[i], &game -> nn[j]);
+				printf("Updated NN %d\n", j + 1);
+			}
             if (CheckCollision(&game -> pipes[i], &game -> nn[j].bird))
                 game -> nn[j].bird.isAlive = 0;
 		}
@@ -163,11 +166,15 @@ int RenderDisplay(Gamestate *game)
     
     for (int j = 0; j < BIRDS; ++j) {
         if (game -> nn[j].bird.isAlive) {
-            SDL_RenderFillRect(game -> renderer, &game -> nn[j].bird.b);
+            SDL_RenderDrawRect(game -> renderer, &game -> nn[j].bird.b);
+//			SDL_SetRenderDrawColor(game -> renderer, 211, 211, 211, 0.05);
+//			SDL_RenderFillRect(game -> renderer, &game -> nn[j].bird.b);
         }
 		else {
 			SDL_SetRenderDrawColor(game -> renderer, 255, 0, 0, 255);
-			SDL_RenderFillRect(game -> renderer, &game -> nn[j].bird.b);
+			SDL_RenderDrawRect(game -> renderer, &game -> nn[j].bird.b);
+//			SDL_SetRenderDrawColor(game -> renderer, 255, 0, 0, 0.2);
+//			SDL_RenderFillRect(game -> renderer, &game -> nn[j].bird.b);
 		}
     }
     

@@ -23,8 +23,10 @@ typedef struct {
     SDL_Rect bot;
 } Pipe;
 
-void PipeInit(Pipe *);
-void UpdatePipe(Pipe *, double);
+long random_at_most(long);
+
+void PipeInit(Pipe *, int);
+void UpdatePipe(Pipe *, double, int);
 int CheckCollision(Pipe *, Bird *);
 
 #endif  // PIPE_H

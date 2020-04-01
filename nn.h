@@ -1,8 +1,10 @@
 #ifndef NN_H
 #define NN_H
 
+#include <stdlib.h>
 #include "activation.h"
 #include "bird.h"
+#include "pipe.h"
 
 typedef struct NeuralNetwork {
 
